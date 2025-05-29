@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet author="cowary" id="create-task-table" labels="R0.0.1">
+        <createTable tableName="task">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="is_done" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="done_at" type="TIMESTAMP"/>
+            <column name="due_at" type="TIMESTAMP"/>
+            <column name="created_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_repeat" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="TIMESTAMP"/>
+            <column name="end_date" type="TIMESTAMP"/>
+            <column name="vikunja_id" type="BIGINT"/>
+            <column name="repeated_task_id" type="bigint"/>
+        </createTable>
+        <createIndex tableName="task" indexName="index_task_vikunja_id">
+            <column name="vikunja_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="cowary" id="create-repeated-task-table" labels="R0.0.1">
+        <createTable tableName="repeated_task">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="created_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="repeat_mod" type="VARCHAR(100)"/>
+            <column name="priority" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="vikunja_id" type="BIGINT"/>
+            <column name="repeat_after" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="repeated_task" indexName="index_repeated_task_vikunja_id">
+            <column name="vikunja_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
