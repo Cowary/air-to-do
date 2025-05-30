@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.cowary.airtodo.service.db.TaskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController("/api/task")
+@RestController
+@RequestMapping("/api/task")
 @RequiredArgsConstructor
 public class TaskController {
     final TaskService taskService;
