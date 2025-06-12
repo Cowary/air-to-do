@@ -75,7 +75,7 @@ public class ApiExecutorHelper {
 
 //                LOGGER.info("Request successful for {} [attempt {}]. Duration: {} ms",
 //                        requestEntityName, attempt, attemptTimer.getSplitNanoTime());
-                LOGGER.debug("Response data: {}", result);
+                LOGGER.trace("Response data: {}", result);
                 return result;
             } catch (Exception e) {
 //                attemptTimer.stop();

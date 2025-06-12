@@ -1,11 +1,11 @@
 package org.cowary.airtodo.service.rest.impl;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cowary.airtodo.service.rest.VikunjaService;
 import org.cowary.airtodo.utils.ApiExecutorHelper;
 import org.cowary.vikunja.api.TaskApi;
 import org.cowary.vikunja.model.ModelsTask;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 
 
 @Service
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class VikunjaServiceImpl implements VikunjaService {
 
@@ -26,38 +26,31 @@ public class VikunjaServiceImpl implements VikunjaService {
 
     private final TaskApi taskApi;
 
-//    private static Logger log = LoggerFactory.getLogger(VikunjaServiceImpl.class);
-
-    @Autowired
-    public VikunjaServiceImpl(TaskApi taskApi) {
-        this.taskApi = taskApi;
-    }
-
     @Override
     public List<ModelsTask> getActiveSprintTasks() {
         var vikunjaResponse = taskApi.tasksAllGetWithHttpInfo(null, null, null, null, null, SPRING_FILTER_ACTIVE, null, null, null);
-        LOGGER.debug("active spring tasks: {}", vikunjaResponse.getBody());
+        LOGGER.trace("active spring tasks: {}", vikunjaResponse.getBody());
         return vikunjaResponse.getBody();
     }
 
     @Override
     public List<ModelsTask> getCompletedSprintTasks() {
         var response = taskApi.tasksAllGetWithHttpInfo(null, null, null, null, null, SPRING_FILTER_COMPLETED, null, null, null);
-        LOGGER.debug("completed spring tasks: {}", response.getBody());
+        LOGGER.trace("completed spring tasks: {}", response.getBody());
         return response.getBody();
     }
 
     @Override
     public List<ModelsTask> getLastWeekTasks() {
         var response = taskApi.tasksAllGetWithHttpInfo(null, null, null, null, null, SPRING_FILTER_COMPLETED, null, null, null);
-        LOGGER.debug("last week spring tasks: {}", response.getBody());
+        LOGGER.trace("last week spring tasks: {}", response.getBody());
         return response.getBody();
     }
 
     @Override
     public List<ModelsTask> getAllTasks() {
         var taskList = fetchAllPages();
-        LOGGER.info("task list: {}", taskList);
+        LOGGER.trace("task list: {}", taskList);
         return taskList;
     }
 
