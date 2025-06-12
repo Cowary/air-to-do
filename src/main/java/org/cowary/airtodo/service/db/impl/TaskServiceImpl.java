@@ -77,4 +77,17 @@ public class TaskServiceImpl implements TaskService {
 
         return String.format("На дату %s не выполнено задач: %s\nВыполнено: %s", today, notDoneTaskList.size(), completedTaskList.size());
     }
+
+    @Nullable
+    @Override
+    public List<Task> getNotDoneThisWeekTasks() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).atStartOfDay();
+        LOGGER.info("startOfWeek: {}", startOfWeek);
+
+        List<Task> notDoneTaskList = taskRepository.findAllByIsDone(Boolean.FALSE);
+        LOGGER.debug("notDoneTaskList: {}", notDoneTaskList.stream().map(Task::getTitle).toList());
+        return notDoneTaskList;
+    }
+
 }

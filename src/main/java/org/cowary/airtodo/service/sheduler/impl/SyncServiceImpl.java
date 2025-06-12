@@ -17,7 +17,7 @@ public class SyncServiceImpl {
     VikunjaService vikunjaService;
     TaskService taskService;
 
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedDelay = 300000)
     public void sync() {
         LOGGER.info("Sync started");
         var vikunjaTaskList = vikunjaService.getAllTasks()

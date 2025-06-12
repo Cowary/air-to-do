@@ -5,6 +5,8 @@ import jakarta.annotation.Nullable;
 import org.cowary.airtodo.entity.Task;
 import org.cowary.vikunja.model.ModelsTask;
 
+import java.util.List;
+
 public interface TaskService {
     Task create(ModelsTask vikunjaTask);
 
@@ -13,4 +15,7 @@ public interface TaskService {
 
     @Nonnull
     String getTask();
+
+    @Nullable
+    List<Task> getNotDoneThisWeekTasks();
 }

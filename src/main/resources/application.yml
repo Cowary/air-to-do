@@ -18,6 +18,7 @@ spring:
 app:
   vikunja-url: ${vikunja-url}
   vikunja-token: ${vikunja-token}
+  telegram-user-id: ${telegram-user-id}
 
 logging:
   level.org.cowary.airtodo: debug
