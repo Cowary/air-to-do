@@ -40,7 +40,7 @@ public class Task {
     Integer priority;
     LocalDateTime startDate;
     LocalDateTime endDate;
-    Long vikunjaId;
+    Integer vikunjaId;
     @ManyToOne
     @JoinColumn(name = "repeated_task_id")
     RepeatedTask repeatedTask;

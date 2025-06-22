@@ -27,6 +27,7 @@ public class SyncServiceImpl {
         LOGGER.trace("vikunjaTaskList: {}", vikunjaTaskList);
         vikunjaTaskList.forEach(taskService::create);
         vikunjaTaskList.forEach(taskService::update);
+        taskService.delete(vikunjaTaskList);
 
         LOGGER.info("Sync finished");
     }

@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.cowary.airtodo.entity.Task;
 import org.cowary.airtodo.repository.TaskRepository;
 import org.cowary.airtodo.service.db.TaskService;
@@ -43,7 +44,7 @@ public class TaskServiceImpl implements TaskService {
                 .priority(vikunjaTask.getPriority())
                 .startDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
                 .endDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()))
-                .vikunjaId(Long.valueOf(vikunjaTask.getId()))
+                .vikunjaId(vikunjaTask.getId())
                 .build();
         return taskRepository.save(task);
     }
@@ -62,6 +63,20 @@ public class TaskServiceImpl implements TaskService {
                 .setStartDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
                 .setEndDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()));
         return taskRepository.save(task);
+    }
+
+    @Override
+    public void delete(List<ModelsTask> vikunjaTaskList) {
+        var taskList = taskRepository.findAllByIsDone(Boolean.FALSE)
+                .stream()
+                .filter(task -> ObjectUtils.isNotEmpty(task.getVikunjaId()))
+                .toList();
+        var vikunjaTaskIdList = vikunjaTaskList.stream().map(ModelsTask::getId).toList();
+        var toDelete = taskList.stream()
+                .filter(task -> ObjectUtils.isNotEmpty(task.getVikunjaId()))
+                .filter(task -> !vikunjaTaskIdList.contains(task.getVikunjaId()))
+                .toList();
+        taskRepository.deleteAll(toDelete);
     }
 
     @Nonnull
