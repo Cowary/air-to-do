@@ -13,6 +13,8 @@ public interface TaskService {
     @Nullable
     Task update(ModelsTask vikunjaTask);
 
+    void delete(List<ModelsTask> vikunjaTaskList);
+
     @Nonnull
     String getTask();
 
