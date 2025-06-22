@@ -12,4 +12,6 @@ public class AppConfig {
 
     @Value("${app.telegram-user-id}")
     private final Long telegramUserId;
+    @Value("${telegram-bot-url}")
+    private final String telegramBotUrl;
 }
