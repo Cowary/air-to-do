@@ -2,13 +2,19 @@ package org.cowary.airtodo.service.db.impl;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.cowary.airtodo.entity.Priority;
+import org.cowary.airtodo.entity.RepeatMod;
+import org.cowary.airtodo.entity.RepeatedTask;
 import org.cowary.airtodo.entity.Task;
+import org.cowary.airtodo.repository.RepeatedTaskRepository;
 import org.cowary.airtodo.repository.TaskRepository;
+import org.cowary.airtodo.service.db.CoinService;
 import org.cowary.airtodo.service.db.TaskService;
 import org.cowary.airtodo.utils.DateHelper;
 import org.cowary.vikunja.model.ModelsTask;
@@ -19,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -27,6 +34,8 @@ import java.util.List;
 public class TaskServiceImpl implements TaskService {
 
     TaskRepository taskRepository;
+    RepeatedTaskRepository repeatedTaskRepository;
+    CoinService coinService;
 
     @Override
     @Nullable
@@ -50,15 +59,82 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Nullable
+    @Transactional
+    @Override
+    public Task createRepatedTask(ModelsTask vikunjaTask) {
+        if (taskRepository.existsTaskByVikunjaId(vikunjaTask.getId())) {
+            return null;
+        }
+        var repeatedTask = repeatedTaskRepository.findRepeatedTaskByVikunjaId(vikunjaTask.getId());
+        if (ObjectUtils.isEmpty(repeatedTask)) {
+            repeatedTask = RepeatedTask.builder()
+                    .title(vikunjaTask.getTitle())
+                    .description(vikunjaTask.getDescription())
+                    .priority(vikunjaTask.getPriority())
+                    .repeatMod(RepeatMod.DEFAULT)
+                    .vikunjaId(vikunjaTask.getId())
+                    .repeatAfter(vikunjaTask.getRepeatAfter())
+                    .build();
+            repeatedTaskRepository.save(repeatedTask);
+        }
+
+        return createTask(vikunjaTask, repeatedTask);
+    }
+
+    @Transactional
+    public Task createTask(ModelsTask vikunjaTask, RepeatedTask repeatedTask) {
+        var task = Task.builder()
+                .title(vikunjaTask.getTitle())
+                .description(vikunjaTask.getDescription())
+                .isDone(vikunjaTask.getDone())
+                .doneAt(DateHelper.toLocalDateTime(vikunjaTask.getDoneAt()))
+                .dueAt(DateHelper.toLocalDateTime(vikunjaTask.getDueDate()))
+                .isRepeat(true)
+                .priority(vikunjaTask.getPriority())
+                .startDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
+                .endDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()))
+                .vikunjaId(vikunjaTask.getId())
+                .repeatedTask(repeatedTask)
+                .build();
+        return taskRepository.save(task);
+    }
+
+    @Nullable
     @Override
     public Task update(ModelsTask vikunjaTask) {
         var task = taskRepository.findTaskByVikunjaId(vikunjaTask.getId());
+        if (Boolean.TRUE.equals(vikunjaTask.getDone()) && Boolean.FALSE.equals(task.getIsDone())) {
+            var priority = Priority.findByPriorityNumber(Objects.requireNonNull(vikunjaTask.getPriority()));
+            coinService.addCoin(priority);
+        }
+        if (vikunjaTask.getRepeatAfter() > 0 && Boolean.FALSE.equals(vikunjaTask.getDone())) {
+            task.setTitle(vikunjaTask.getTitle())
+                .setDescription(vikunjaTask.getDescription())
+                    .setIsDone(vikunjaTask.getDone())
+                    .setDoneAt(DateHelper.toLocalDateTime(vikunjaTask.getDoneAt()))
+                    .setDueAt(DateHelper.toLocalDateTime(vikunjaTask.getDueDate()))
+                    .setIsRepeat(true)
+                    .setPriority(vikunjaTask.getPriority())
+                    .setStartDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
+                    .setEndDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()));
+        } else if (vikunjaTask.getRepeatAfter() > 0 && Boolean.TRUE.equals(vikunjaTask.getDone())) {
+            task.setTitle(vikunjaTask.getTitle())
+                    .setDescription(vikunjaTask.getDescription())
+                    .setIsDone(vikunjaTask.getDone())
+                    .setDoneAt(DateHelper.toLocalDateTime(vikunjaTask.getDoneAt()))
+                    .setDueAt(DateHelper.toLocalDateTime(vikunjaTask.getDueDate()))
+                    .setIsRepeat(true)
+                    .setPriority(vikunjaTask.getPriority())
+                    .setStartDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
+                    .setEndDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()))
+                    .setVikunjaId(null);
+        }
+
         task = task.setTitle(vikunjaTask.getTitle())
                 .setDescription(vikunjaTask.getDescription())
                 .setIsDone(vikunjaTask.getDone())
                 .setDoneAt(DateHelper.toLocalDateTime(vikunjaTask.getDoneAt()))
                 .setDueAt(DateHelper.toLocalDateTime(vikunjaTask.getDueDate()))
-                .setIsRepeat(false)
                 .setPriority(vikunjaTask.getPriority())
                 .setStartDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
                 .setEndDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()));

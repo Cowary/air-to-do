@@ -22,10 +22,10 @@ public class SyncServiceImpl {
         LOGGER.info("Sync started");
         var vikunjaTaskList = vikunjaService.getAllTasks()
                 .stream()
-                .filter(task -> task.getRepeatAfter().equals(0) )
                 .toList();
         LOGGER.trace("vikunjaTaskList: {}", vikunjaTaskList);
-        vikunjaTaskList.forEach(taskService::create);
+        vikunjaTaskList.stream().filter(task -> task.getRepeatAfter().equals(0) ).forEach(taskService::create);
+        vikunjaTaskList.stream().filter(task -> !task.getRepeatAfter().equals(0) ).forEach(taskService::createRepatedTask);
         vikunjaTaskList.forEach(taskService::update);
         taskService.delete(vikunjaTaskList);
 
