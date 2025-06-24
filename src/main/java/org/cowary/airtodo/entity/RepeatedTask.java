@@ -33,7 +33,7 @@ public class RepeatedTask {
     RepeatMod repeatMod;
     @Column(nullable = false)
     Integer priority;
-    Long vikunjaId;
+    Integer vikunjaId;
     @Column(nullable = false)
-    Long repeatAfter;
+    Integer repeatAfter;
 }
