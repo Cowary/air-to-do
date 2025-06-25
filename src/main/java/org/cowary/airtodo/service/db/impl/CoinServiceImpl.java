@@ -25,6 +25,7 @@ public class CoinServiceImpl implements CoinService {
         var coin = coinRepository.findById(1L).orElseThrow();
         var coinValue = coinValueRepository.findCoinValueByPriority(priority);
         coin.setAmount(coin.getAmount() + coinValue.getAmount());
+        LOGGER.debug("Add coin {}", coinValue);
         return true;
     }
 
@@ -33,6 +34,7 @@ public class CoinServiceImpl implements CoinService {
     public boolean removeCoin(Long count) {
         var coin = coinRepository.findById(1L).orElseThrow();
         coin.setAmount(coin.getAmount() - count);
+        LOGGER.debug("Remove coin {}", count);
         return true;
     }
 }

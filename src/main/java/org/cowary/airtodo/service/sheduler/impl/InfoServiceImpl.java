@@ -1,5 +1,6 @@
 package org.cowary.airtodo.service.sheduler.impl;
 
+import jakarta.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -11,7 +12,9 @@ import org.cowary.airtodo.service.rest.TelegramBotService;
 import org.cowary.airtodo.service.sheduler.InfoService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +32,17 @@ public class InfoServiceImpl implements InfoService {
     @Override
     @Scheduled(cron = "0 0 9,13,18 * * *", zone = "Europe/Moscow")
     public void sendListNotDoneTasks() {
+        LOGGER.info("start method by scheduler: sendListNotDoneTasks");
         var taskList = taskService.getNotDoneThisWeekTasks();
         var report = generateReport(taskList);
         telegramBotService.sendMessage(appConfig.getTelegramUserId(), report);
+        LOGGER.info("stop method by scheduler: sendListNotDoneTasks");
     }
 
-    public String generateReport(List<Task> tasks) {
+    public String generateReport(@Nullable List<Task> tasks) {
+        if (CollectionUtils.isEmpty(tasks)) {
+            return "Список задач пуст. Вы свободны!";
+        }
         var sortedTasks = tasks
                 .stream()
                 .filter(task -> task.getPriority() >= 2)
@@ -74,8 +82,8 @@ public class InfoServiceImpl implements InfoService {
                 report.append("\n-----\n").append(priorityName).append("\n");
 
                 for (Task task : tasksByPriority) {
-                    String dueDateStr = task.getDueAt() != null
-                            ? " дата выполнения: " + task.getDueAt()
+                    String dueDateStr = (task.getDueAt() != null && task.getDueAt().isAfter(LocalDateTime.of(2000, 1, 1, 0, 0)))
+                            ? "\nдата: " + task.getDueAt()
                             : "";
                     report.append(task.getTitle()).append(dueDateStr).append("\n");
                 }

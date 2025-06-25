@@ -25,6 +25,7 @@ public class AwardServiceImpl implements AwardService {
                 .cost(cost)
                 .build();
         awardRepository.save(award);
+        LOGGER.debug("New award created: {}", award);
         return true;
     }
 

@@ -39,23 +39,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Nullable
+    @Transactional
     public Task create(ModelsTask vikunjaTask) {
         if (taskRepository.existsTaskByVikunjaId(vikunjaTask.getId())) {
+            LOGGER.trace("Existed task found. New task with vikinjaTaskId-{} not created", vikunjaTask.getId());
             return null;
         }
-        var task = Task.builder()
-                .title(vikunjaTask.getTitle())
-                .description(vikunjaTask.getDescription())
-                .isDone(vikunjaTask.getDone())
-                .doneAt(DateHelper.toLocalDateTime(vikunjaTask.getDoneAt()))
-                .dueAt(DateHelper.toLocalDateTime(vikunjaTask.getDueDate()))
-                .isRepeat(false)
-                .priority(vikunjaTask.getPriority())
-                .startDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
-                .endDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()))
-                .vikunjaId(vikunjaTask.getId())
-                .build();
-        return taskRepository.save(task);
+        return createTask(vikunjaTask, null);
     }
 
     @Nullable
@@ -63,6 +53,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task createRepatedTask(ModelsTask vikunjaTask) {
         if (taskRepository.existsTaskByVikunjaId(vikunjaTask.getId())) {
+            LOGGER.debug("Existed task found. New repeated task with vikinjaTaskId-{} not created", vikunjaTask.getId());
             return null;
         }
         var repeatedTask = repeatedTaskRepository.findRepeatedTaskByVikunjaId(vikunjaTask.getId());
@@ -76,31 +67,35 @@ public class TaskServiceImpl implements TaskService {
                     .repeatAfter(vikunjaTask.getRepeatAfter())
                     .build();
             repeatedTaskRepository.save(repeatedTask);
+            LOGGER.debug("Created new repeated task with id: {} and title: {}", repeatedTask.getId(), repeatedTask.getTitle());
         }
 
         return createTask(vikunjaTask, repeatedTask);
     }
 
     @Transactional
-    public Task createTask(ModelsTask vikunjaTask, RepeatedTask repeatedTask) {
+    public Task createTask(@Nonnull ModelsTask vikunjaTask, @Nullable RepeatedTask repeatedTask) {
         var task = Task.builder()
                 .title(vikunjaTask.getTitle())
                 .description(vikunjaTask.getDescription())
                 .isDone(vikunjaTask.getDone())
                 .doneAt(DateHelper.toLocalDateTime(vikunjaTask.getDoneAt()))
                 .dueAt(DateHelper.toLocalDateTime(vikunjaTask.getDueDate()))
-                .isRepeat(true)
+                .isRepeat(repeatedTask != null)
                 .priority(vikunjaTask.getPriority())
                 .startDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
                 .endDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()))
                 .vikunjaId(vikunjaTask.getId())
                 .repeatedTask(repeatedTask)
                 .build();
-        return taskRepository.save(task);
+        taskRepository.save(task);
+        LOGGER.debug("Created new task with id: {} ,title: {} and repeatedTaskId: {}", task.getId(), task.getTitle(), repeatedTask.getId());
+        return task;
     }
 
     @Nullable
     @Override
+    @Transactional
     public Task update(ModelsTask vikunjaTask) {
         var task = taskRepository.findTaskByVikunjaId(vikunjaTask.getId());
         if (Boolean.TRUE.equals(vikunjaTask.getDone()) && Boolean.FALSE.equals(task.getIsDone())) {
@@ -128,17 +123,19 @@ public class TaskServiceImpl implements TaskService {
                     .setStartDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
                     .setEndDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()))
                     .setVikunjaId(null);
+        } else {
+            task = task.setTitle(vikunjaTask.getTitle())
+                    .setDescription(vikunjaTask.getDescription())
+                    .setIsDone(vikunjaTask.getDone())
+                    .setDoneAt(DateHelper.toLocalDateTime(vikunjaTask.getDoneAt()))
+                    .setDueAt(DateHelper.toLocalDateTime(vikunjaTask.getDueDate()))
+                    .setPriority(vikunjaTask.getPriority())
+                    .setStartDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
+                    .setEndDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()));
         }
-
-        task = task.setTitle(vikunjaTask.getTitle())
-                .setDescription(vikunjaTask.getDescription())
-                .setIsDone(vikunjaTask.getDone())
-                .setDoneAt(DateHelper.toLocalDateTime(vikunjaTask.getDoneAt()))
-                .setDueAt(DateHelper.toLocalDateTime(vikunjaTask.getDueDate()))
-                .setPriority(vikunjaTask.getPriority())
-                .setStartDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
-                .setEndDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()));
-        return taskRepository.save(task);
+        taskRepository.save(task);
+        LOGGER.trace("Was updated task with id: {}", task.getId());
+        return task;
     }
 
     @Override
@@ -153,6 +150,7 @@ public class TaskServiceImpl implements TaskService {
                 .filter(task -> !vikunjaTaskIdList.contains(task.getVikunjaId()))
                 .toList();
         taskRepository.deleteAll(toDelete);
+        LOGGER.debug("These tasks was deleted: {}", toDelete.stream().map(Task::getId).toList());
     }
 
     @Nonnull

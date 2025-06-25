@@ -19,7 +19,7 @@ public class SyncServiceImpl {
 
     @Scheduled(fixedDelay = 300000)
     public void sync() {
-        LOGGER.info("Sync started");
+        LOGGER.info("Sync with vikunja started");
         var vikunjaTaskList = vikunjaService.getAllTasks()
                 .stream()
                 .toList();
@@ -29,6 +29,6 @@ public class SyncServiceImpl {
         vikunjaTaskList.forEach(taskService::update);
         taskService.delete(vikunjaTaskList);
 
-        LOGGER.info("Sync finished");
+        LOGGER.info("Sync with vikunja finished");
     }
 }
