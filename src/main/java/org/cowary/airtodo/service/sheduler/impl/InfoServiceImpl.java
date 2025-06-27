@@ -39,7 +39,14 @@ public class InfoServiceImpl implements InfoService {
         LOGGER.info("stop method by scheduler: sendListNotDoneTasks");
     }
 
-    public String generateReport(@Nullable List<Task> tasks) {
+    @Override
+    public void sendMessageIsDone(Task task) {
+        var message = doneTaskMessage(task);
+        telegramBotService.sendMessage(appConfig.getTelegramUserId(), message);
+        LOGGER.debug("Send message about the close task with id: {}", task.getId());
+    }
+
+    private String generateReport(@Nullable List<Task> tasks) {
         if (CollectionUtils.isEmpty(tasks)) {
             return "Список задач пуст. Вы свободны!";
         }
@@ -91,6 +98,10 @@ public class InfoServiceImpl implements InfoService {
         }
 
         return report.toString();
+    }
+
+    private String doneTaskMessage(Task task) {
+        return String.format("Ура! Выполнена задача %s!", task.getTitle());
     }
 
     private static String getPriorityName(int priority) {
