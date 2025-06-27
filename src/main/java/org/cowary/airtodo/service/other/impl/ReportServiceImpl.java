@@ -79,7 +79,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public String doneTaskMessage(Task task) {
-        return String.format("Ура! Выполнена задача %s!", task.getTitle());
+        return String.format("Ура! Выполнена задача!\n%s", task.getTitle());
     }
 
     private static String getPriorityName(int priority) {
