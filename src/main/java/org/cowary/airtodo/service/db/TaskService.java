@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import org.cowary.airtodo.entity.Task;
 import org.cowary.vikunja.model.ModelsTask;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TaskService {
@@ -25,4 +26,7 @@ public interface TaskService {
 
     @Nullable
     List<Task> getNotDoneThisWeekTasks();
+
+    @Nullable
+    List<Task> getIsDoneAndAfterDate(Boolean isDone, LocalDateTime afterDate);
 }

@@ -20,13 +20,12 @@ public class SyncServiceImpl {
     @Scheduled(fixedDelay = 300000)
     public void sync() {
         LOGGER.info("Sync with vikunja started");
-        var vikunjaTaskList = vikunjaService.getAllTasks()
-                .stream()
-                .toList();
+        var vikunjaTaskList = vikunjaService.getAllTasks();
         LOGGER.trace("vikunjaTaskList: {}", vikunjaTaskList);
         vikunjaTaskList.stream().filter(task -> task.getRepeatAfter().equals(0) ).forEach(taskService::create);
         vikunjaTaskList.stream().filter(task -> !task.getRepeatAfter().equals(0) ).forEach(taskService::createRepatedTask);
         vikunjaTaskList.forEach(taskService::update);
+
         taskService.delete(vikunjaTaskList);
 
         LOGGER.info("Sync with vikunja finished");

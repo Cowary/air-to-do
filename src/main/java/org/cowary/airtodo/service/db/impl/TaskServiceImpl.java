@@ -16,7 +16,6 @@ import org.cowary.airtodo.repository.RepeatedTaskRepository;
 import org.cowary.airtodo.repository.TaskRepository;
 import org.cowary.airtodo.service.db.CoinService;
 import org.cowary.airtodo.service.db.TaskService;
-import org.cowary.airtodo.service.sheduler.InfoService;
 import org.cowary.airtodo.utils.DateHelper;
 import org.cowary.vikunja.model.ModelsTask;
 import org.springframework.stereotype.Service;
@@ -33,11 +32,9 @@ import java.util.Objects;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor
 public class TaskServiceImpl implements TaskService {
-
     TaskRepository taskRepository;
     RepeatedTaskRepository repeatedTaskRepository;
     CoinService coinService;
-    InfoService infoService;
 
     @Override
     @Nullable
@@ -91,7 +88,7 @@ public class TaskServiceImpl implements TaskService {
                 .repeatedTask(repeatedTask)
                 .build();
         taskRepository.save(task);
-        LOGGER.debug("Created new task with id: {} ,title: {} and repeatedTaskId: {}", task.getId(), task.getTitle(), repeatedTask.getId());
+        LOGGER.debug("Created new task with id: {} ,title: {} and repeatedTaskId: {}", task.getId(), task.getTitle(), repeatedTask != null ? repeatedTask.getId() : null);
         return task;
     }
 
@@ -134,9 +131,6 @@ public class TaskServiceImpl implements TaskService {
                     .setPriority(vikunjaTask.getPriority())
                     .setStartDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
                     .setEndDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()));
-        }
-        if (task.getIsDone()) {
-            infoService.sendMessageIsDone(task);
         }
         LOGGER.trace("Was updated task with id: {}", task.getId());
         return task;
@@ -181,6 +175,12 @@ public class TaskServiceImpl implements TaskService {
         List<Task> notDoneTaskList = taskRepository.findAllByIsDone(Boolean.FALSE);
         LOGGER.debug("notDoneTaskList: {}", notDoneTaskList.stream().map(Task::getTitle).toList());
         return notDoneTaskList;
+    }
+
+    @Nullable
+    @Override
+    public List<Task> getIsDoneAndAfterDate(Boolean isDone, LocalDateTime afterDate) {
+        return taskRepository.findAllByIsDoneAndDoneAtAfter(isDone, afterDate);
     }
 
 }
