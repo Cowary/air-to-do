@@ -16,6 +16,7 @@ import org.cowary.airtodo.repository.RepeatedTaskRepository;
 import org.cowary.airtodo.repository.TaskRepository;
 import org.cowary.airtodo.service.db.CoinService;
 import org.cowary.airtodo.service.db.TaskService;
+import org.cowary.airtodo.service.sheduler.InfoService;
 import org.cowary.airtodo.utils.DateHelper;
 import org.cowary.vikunja.model.ModelsTask;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class TaskServiceImpl implements TaskService {
     TaskRepository taskRepository;
     RepeatedTaskRepository repeatedTaskRepository;
     CoinService coinService;
+    InfoService infoService;
 
     @Override
     @Nullable
@@ -133,7 +135,9 @@ public class TaskServiceImpl implements TaskService {
                     .setStartDate(DateHelper.toLocalDateTime(vikunjaTask.getStartDate()))
                     .setEndDate(DateHelper.toLocalDateTime(vikunjaTask.getEndDate()));
         }
-        taskRepository.save(task);
+        if (task.getIsDone()) {
+            infoService.sendMessageIsDone(task);
+        }
         LOGGER.trace("Was updated task with id: {}", task.getId());
         return task;
     }
