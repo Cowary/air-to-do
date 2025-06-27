@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.cowary</groupId>
 	<artifactId>air-to-do</artifactId>
-	<version>0.3.0</version>
+	<version>0.3.1</version>
 	<name>air-to-do</name>
 	<description>air-to-do</description>
 	<packaging>jar</packaging>
